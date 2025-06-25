@@ -10,15 +10,19 @@ export default function LoginPage() {
 
   const login = async () => {
     setErrorMsg('');
-
     try {
       const res = await axios.post('/auth/login', { email, password });
       localStorage.setItem('token', res.data.access_token);
       navigate('/');
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        'Login failed. Please check your credentials.';
+      let msg = 'Login failed. Please check your credentials.';
+
+      if (Array.isArray(err.response?.data?.message)) {
+        msg = err.response.data.message.join('\n');
+      } else if (typeof err.response?.data?.message === 'string') {
+        msg = err.response.data.message;
+      }
+
       setErrorMsg(msg);
     }
   };
@@ -44,7 +48,9 @@ export default function LoginPage() {
         />
 
         {errorMsg && (
-          <p className="text-red-500 text-sm mb-4 text-center">{errorMsg}</p>
+          <div className="text-red-500 text-sm mb-4 text-center whitespace-pre-line">
+            {errorMsg}
+          </div>
         )}
 
         <button
